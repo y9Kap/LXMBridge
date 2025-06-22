@@ -1,4 +1,4 @@
-from muplov.micronredner import *
+from LXMKit.mu import *
 
 logo = r"""
     ___                              _          ____       _     __         

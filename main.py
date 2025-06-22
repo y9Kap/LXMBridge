@@ -1,5 +1,3 @@
-
-
 import meshtastic, time, base64, json, hashlib, base64, os
 import meshtastic.tcp_interface
 import meshtastic.serial_interface
@@ -8,7 +6,6 @@ from db import database, MeshtasticNode, MeshtasticMessage, LXMFUser
 from dotenv import load_dotenv
 
 from LXMKit.app import LXMFApp, Message, Author
-from LXMKit.mu import *
 
 import RNS, LXMF
 from log_f import logger
@@ -34,7 +31,7 @@ assert not SECRET is None, "Secret cannot be none, missing .env file?"
 
 class Bridge(LXMFApp):
     def __init__(self):
-        LXMFApp.__init__(self, app_name="AU Meshtastic Bridge")
+        LXMFApp.__init__(self, app_name="AU Meshtastic Bridge", storage_path="tmp")
         self.mesh = Injector(self.create_interface)
 
         self.routers:dict[str, LXMF.LXMRouter] = {} # meshtastic_node_id: LXMRouter
@@ -56,8 +53,8 @@ class Bridge(LXMFApp):
         self.LXMF_global_cooldown = AntiSpam()
 
     def create_interface(self):
-        remote_address = os.environ.get("MESHWIKI_REMOTE", None)
-        serial_port = os.environ.get("MESHWIKI_SERIAL", None)
+        remote_address = os.environ.get("MESHTASTIC_REMOTE", None)
+        serial_port = os.environ.get("MESHTASTIC_SERIAL", None)
         
         if remote_address:
             interface = meshtastic.tcp_interface.TCPInterface(hostname=remote_address)    
