@@ -23,7 +23,7 @@ I didn't really intend for anyone to run my script, but if you insist:
 ### Instructions
 
 1. Download this repo to your server ([link](git@github.com:Aveygo/LXMBridge.git))
-2. Download the requirements: ```pip install meshtastic pubsub dotenv RNS LXMF better_profanity git+https://github.com/Aveygo/LXMKit.git```
+2. Download the requirements: ```pip install meshtastic pubsub dotenv RNS LXMF better_profanity peewee git+https://github.com/Aveygo/LXMKit.git```
 3. Create a file with the name: ```.env```, and fill in the following details:
 
 ```bash

@@ -23,7 +23,7 @@ class Injector:
                 self.interface:meshtastic.tcp_interface.TCPInterface = self.interface_generator()
                 break
             except:
-                logger.warning("Interface creation failed...")
+                logger.warning("Interface creation failed, retrying...")
             
             time.sleep(10)
 

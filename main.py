@@ -352,7 +352,7 @@ class Bridge(LXMFApp):
                     self.source
                 )
 
-                dest.send(f"[MTS -> LXMF] {raw_node["user"]["longName"]}: {profanity.censor(message_string)}")
+                dest.send(f"[MTS -> LXMF] {raw_node['user']['longName']}: {profanity.censor(message_string)}")
 
         logger.info(f'Done')
 
