@@ -39,7 +39,7 @@ MESHTASTIC_REMOTE = "192.168.0.123"  # if using wifi, enter the meshtasic node's
 BRIDGE_LOCATION = "My beloved city" # name of location in title of the bridge
 DATABASE_NAME = "main.db"            # name of local sqlite3 database
 ```
-
-5. Run ```python3 main.py``` and copy the delivery destination hash
-6. Message the node (the copied hash) ```\help``` to get started.
+5. add to 'load_dotenv("example.env)' in main.py path to .env file, if his not see .enf file
+6. Run ```python3 main.py``` and copy the delivery destination hash
+7. Message the node (the copied hash) ```\help``` to get started.
 
