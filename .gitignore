@@ -4,3 +4,4 @@ tmp/
 LXMKit_library/
 venv/
 bridge.log
+screen_log.log

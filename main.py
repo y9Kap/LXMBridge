@@ -1,6 +1,7 @@
 import meshtastic, time, base64, json, hashlib, base64, os
 import meshtastic.tcp_interface
 import meshtastic.serial_interface
+import traceback
 from pubsub import pub
 from db import database, MeshtasticNode, MeshtasticMessage, LXMFUser
 from dotenv import load_dotenv
@@ -9,7 +10,7 @@ from LXMKit.app import LXMFApp, Message, Author
 
 import RNS, LXMF
 from log_f import logger
-from page import canvas
+from page import create_canvas
 from cooldown import AntiSpam
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -52,6 +53,8 @@ class Bridge(LXMFApp):
         # the other way around
         self.LXMF_global_cooldown = AntiSpam()
 
+        self.router.enable_propagation()
+
     def create_interface(self):
         remote_address = os.environ.get("MESHTASTIC_REMOTE", None)
         serial_port = os.environ.get("MESHTASTIC_SERIAL", None)
@@ -86,7 +89,7 @@ class Bridge(LXMFApp):
             from_display_name = self.get_name(message_source)
             from_display_name = ''.join(c for c in from_display_name.decode('ascii', errors='ignore') if c.isprintable())
 
-            msg = f"[LXMF -> MTS] {from_display_name}: {content}"
+            msg = f"{from_display_name}: {content}"
             
             if not self.LXMF_global_cooldown.try_perform_action():
                 logger.info("Blocked message due to cooldown")
@@ -162,14 +165,19 @@ class Bridge(LXMFApp):
                 message.author.send("Sorry, to prevent spam, we need your RNS identity first.\nYou can try announcing it, but it may take a while for it to propagate through the network...")
             else:
                 msg = message.content.split("/send ")[1]
-                msg = f"[MTS -> LXMF] {message.author.display_name}: {msg}"
+                msg = f"{message.author.display_name}: {msg}"
                 self.mesh.interface.sendText(profanity.censor(msg), wantAck=True)
                 message.author.send("Your message has been sent!")
             
             return
 
     def handleIndex(self, path:str, link:RNS.Link):
-        return canvas.render().encode("utf-8")
+        try:
+            return create_canvas(self.router, self.routers).render().encode("utf-8")
+        except Exception as e:
+            print(traceback.format_exc())
+            logger.warning(f"Could not serve page: {e}")
+            return "Sorry, but an internal server error occurred...".encode("utf-8")
 
     def handle_meshtastic_message(self, user:MeshtasticNode, message:str, from_id:str):
         if not message.startswith("/"):
@@ -352,7 +360,7 @@ class Bridge(LXMFApp):
                     self.source
                 )
 
-                dest.send(f"[MTS -> LXMF] {raw_node['user']['longName']}: {profanity.censor(message_string)}")
+                dest.send(f"{raw_node['user']['longName']}: {profanity.censor(message_string)}")
 
         logger.info(f'Done')
 
