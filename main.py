@@ -26,13 +26,14 @@ profanity.load_censor_words()
 
 COOLDOWN = 5 # seconds
 SECRET = os.environ.get("BRIDGE_SECRET", None)
+BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 
 assert not SECRET is None, "Secret cannot be none, missing .env file?"
 
 
 class Bridge(LXMFApp):
     def __init__(self):
-        LXMFApp.__init__(self, app_name="AU Meshtastic Bridge", storage_path="tmp")
+        LXMFApp.__init__(self, app_name=str(BRIDGE_LOCATION) + "Meshtastic Bridge", storage_path="tmp")
         self.mesh = Injector(self.create_interface)
 
         self.routers:dict[str, LXMF.LXMRouter] = {} # meshtastic_node_id: LXMRouter

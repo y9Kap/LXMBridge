@@ -24,14 +24,22 @@ I didn't really intend for anyone to run my script, but if you insist:
 
 1. Download this repo to your server ([link](git@github.com:Aveygo/LXMBridge.git))
 2. Download the requirements: ```pip install meshtastic pubsub dotenv RNS LXMF better_profanity peewee git+https://github.com/Aveygo/LXMKit.git```
-3. Create a file with the name: ```.env```, and fill in the following details:
+3. Install slite3 if you haven't already and create a database:
+```bash
+sudo apt install sqlite3
+sqlite3 main.db
+```
+4. Create a file with the name: ```.env```, and fill in the following details:
 
 ```bash
-BRIDGE_NAME = "My Epic Bridge"      # Your bridge name here
-BRIDGE_SECRET = "1234567890"        # smash your keyboard or whatever to generate a key
-MESHTASTIC_REMOTE = "192.168.1.10"  # if using wifi, enter the meshtasic node's ip address
+BRIDGE_NAME = "My Epic Bridge"       # Your bridge name here
+BRIDGE_SECRET = "1234567890qqwerty"  # smash your keyboard or whatever to generate a key
+MESHTASTIC_REMOTE = "192.168.0.123"  # if using wifi, enter the meshtasic node's ip address
+# MESHTASTIC_SERIAL = "/dev/ttyACM1" # if using usb, enter the usb port to meshtastic node
+BRIDGE_LOCATION = "My beloved city" # name of location in title of the bridge
+DATABASE_NAME = "main.db"            # name of local sqlite3 database
 ```
 
-4. Run ```python3 main.py``` and copy the delivery destination hash
-5. Message the node (the copied hash) ```\help``` to get started.
+5. Run ```python3 main.py``` and copy the delivery destination hash
+6. Message the node (the copied hash) ```\help``` to get started.
 

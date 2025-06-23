@@ -1,7 +1,12 @@
-
+import  os
 from peewee import * # type: ignore
+from dotenv import load_dotenv
 
-DATABASE = 'tmp/main.db'
+load_dotenv()
+
+DATABASE_NAME = os.environ.get("DATABASE_NAME", None)
+
+DATABASE = str(DATABASE_NAME)
 
 database = SqliteDatabase(DATABASE)
 
