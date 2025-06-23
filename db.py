@@ -2,7 +2,7 @@ import  os
 from peewee import * # type: ignore
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv("example.env") # add your path
 
 DATABASE_NAME = os.environ.get("DATABASE_NAME", None)
 

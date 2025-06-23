@@ -4,7 +4,8 @@ from log_f import logger
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+load_dotenv("example.env") # add your path
+
 BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 
 

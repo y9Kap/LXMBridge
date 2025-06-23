@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat
 from better_profanity import profanity
 from fixed_interface import Injector
 
-load_dotenv()
+load_dotenv("example.env") # add your path
 
 profanity.load_censor_words()
 
@@ -33,7 +33,7 @@ assert not SECRET is None, "Secret cannot be none, missing .env file?"
 
 class Bridge(LXMFApp):
     def __init__(self):
-        LXMFApp.__init__(self, app_name=str(BRIDGE_LOCATION) + "Meshtastic Bridge", storage_path="tmp")
+        LXMFApp.__init__(self, app_name=str(BRIDGE_LOCATION) + " Meshtastic Bridge", storage_path="tmp")
         self.mesh = Injector(self.create_interface)
 
         self.routers:dict[str, LXMF.LXMRouter] = {} # meshtastic_node_id: LXMRouter
