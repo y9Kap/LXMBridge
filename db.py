@@ -6,7 +6,7 @@ load_dotenv("example.env") # add your path
 
 DATABASE_NAME = os.environ.get("DATABASE_NAME", None)
 
-DATABASE = str(DATABASE_NAME)
+DATABASE = f'{DATABASE_NAME}'
 
 database = SqliteDatabase(DATABASE)
 

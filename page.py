@@ -1,10 +1,12 @@
 from LXMKit.mu import *
 from db import MeshtasticNode
 from log_f import logger
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 import os
 
+find_dotenv()
 load_dotenv("example.env") # add your path
+
 
 BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 
