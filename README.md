@@ -24,7 +24,7 @@ I didn't really intend for anyone to run my script, but if you insist:
 
 1. Download this repo to your server ([link](git@github.com:Aveygo/LXMBridge.git))
 2. Download the requirements: ```pip install meshtastic pubsub dotenv RNS LXMF better_profanity peewee git+https://github.com/Aveygo/LXMKit.git```
-3. Install slite3 if you haven't already and create a database:
+3. Install sqlite3 if you haven't already and create a database:
 ```bash
 sudo apt install sqlite3
 sqlite3 main.db
