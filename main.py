@@ -275,7 +275,6 @@ class Bridge(LXMFApp):
             assert isinstance(interface.nodes, dict), "interface.nodes not loaded"
 
             my_node_info = interface.getMyNodeInfo()
-            last_heard = my_node_info.get("lastHeard")
             my_node_id = my_node_info.get("user", {}).get("id", None)
 
             updated_count = 0
@@ -284,7 +283,12 @@ class Bridge(LXMFApp):
                 if node_id == my_node_id:
                     continue
 
+                last_heard = node_info.get("lastHeard")
                 user_info = node_info.get("user")
+
+                if last_heard is None:
+                    continue
+
                 if user_info is None:
                     continue
 
