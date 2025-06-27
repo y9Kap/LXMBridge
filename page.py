@@ -1,5 +1,5 @@
-from LXMKit.mu import *
-from db import MeshtasticNode
+from LXMKit.src.LXMKit.mu import *
+from db import MeshtasticNode, VisibleMeshtasticNode
 from log_f import logger
 from dotenv import load_dotenv, find_dotenv
 import os
