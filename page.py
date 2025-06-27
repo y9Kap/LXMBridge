@@ -75,7 +75,6 @@ def create_canvas(primary_router, routers={}):
         router = routers.get(node.node_id)
         if router:
             dst = str(list(router.delivery_destinations.values())[0].hash.hex())
-            print(dst)
         else:
             dst = "N/A"
 

@@ -262,7 +262,7 @@ class Bridge(LXMFApp):
         if message.startswith("/register"):
             try:
                 key = message.split("/register")[1]
-                print(key)
+                print(f'{key}')
                 identity = RNS.Identity.from_bytes(base64.b32decode(key[:128]))
             except:
                 self.mesh.interface.sendText('Sorry, your provided identity could not be loaded.', from_id, wantAck=True)
@@ -347,16 +347,10 @@ class Bridge(LXMFApp):
 
                 long_name = user_info.get("longName", "UnknownLongName")
                 short_name = user_info.get("shortName", "UnknownShortName")
-                node_public_key = user_info.get("publicKey")
+                data = os.urandom(80)  # 80 байт случайных данных
+                node_public_key = base64.b32encode(data).decode('utf-8')
 
                 visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
-
-                if visible_node and visible_node.public_key:
-                    node_public_key = visible_node.public_key
-                elif not node_public_key:
-                    data = os.urandom(80)  # 80 байт случайных данных
-                    node_public_key = base64.b32encode(data).decode('utf-8')
-                    logger.warning(f"No public key for node {long_name}. Generated placeholder: {node_public_key}")
 
                 if visible_node is None:
                     visible_node = VisibleMeshtasticNode.create(
@@ -375,8 +369,7 @@ class Bridge(LXMFApp):
                     visible_node.save()
 
                 if visible_node.lxmf_identity is None:
-                    identity = RNS.Identity.from_bytes(base64.b32decode(node_public_key))
-                    visible_node.lxmf_identity = identity
+                    visible_node.lxmf_identity = RNS.Identity.from_bytes(base64.b32decode(node_public_key))
                     visible_node.save()
                     logger.info(f"Issued LXMF identity for visible node: {long_name}")
 
