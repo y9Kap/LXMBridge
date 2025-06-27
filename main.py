@@ -470,7 +470,7 @@ class Bridge(LXMFApp):
             mesh_node.short_name = raw_node["user"]["shortName"]
             mesh_node.last_seen = int(time.time()) # type: ignore
             mesh_node.public_key = raw_node["user"]["publicKey"]
-            print(raw_node["user"]["publicKey"])
+            logger.info(f'{raw_node["user"]["publicKey"]}')
             mesh_node.save()
 
         message_bytes = packet['decoded']['payload']
