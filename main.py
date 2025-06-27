@@ -40,15 +40,6 @@ class Bridge(LXMFApp):
     def __init__(self):
         LXMFApp.__init__(self, app_name=f"{BRIDGE_LOCATION} Meshtastic Bridge", storage_path="tmp")
         self.mesh = Injector(self.create_interface)
-        def periodic_scan():
-            while True:
-                try:
-                    self.scan_visible_nodes()
-                except Exception as e:
-                    logger.error(f"Visible nodes scan failed: {e}")
-                time.sleep(60)
-
-        threading.Thread(target=periodic_scan, daemon=True).start()
 
         self.routers:dict[str, LXMF.LXMRouter] = {} # meshtastic_node_id: LXMRouter
         self.build_routers()
@@ -70,7 +61,15 @@ class Bridge(LXMFApp):
 
         self.router.enable_propagation()
 
+        def periodic_scan():
+            while True:
+                try:
+                    self.scan_visible_nodes()
+                except Exception as e:
+                    logger.error(f"Visible nodes scan failed: {e}")
+                time.sleep(60)
 
+        threading.Thread(target=periodic_scan, daemon=True).start()
 
     def create_interface(self):
         remote_address = os.environ.get("MESHTASTIC_REMOTE", None)
@@ -347,9 +346,8 @@ class Bridge(LXMFApp):
                 long_name = user_info.get("longName", "UnknownLongName")
                 short_name = user_info.get("shortName", "UnknownShortName")
 
-                prv_bytes = os.urandom(64)
+                prv_bytes = os.urandom(80)
                 node_public_key = base64.b32encode(prv_bytes).decode()
-                logger.info(f'{node_public_key}')
 
                 visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
 
