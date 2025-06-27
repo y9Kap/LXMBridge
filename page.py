@@ -11,15 +11,7 @@ BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 
 logo = r"""
 
-            
-                     ________ ____  __.               __________        .__    .___              
-             ___.__./   __   \    |/ _|____  ______   \______   \_______|__| __| _/ ____   ____  
-            <   |  |\____    /      < \__  \ \____ \   |    |  _/\_  __ \  |/ __ | / ___\_/ __ \ 
-             \___  |   /    /|    |  \ / __ \|  |_> >  |    |   \ |  | \/  / /_/ |/ /_/  >  ___/ 
-             / ____|  /____/ |____|__ (____  /   __/   |______  / |__|  |__\____ |\___  / \___  >
-             \/                      \/    \/|__|             \/                \/_____/      \/
-             
-              
+                        Y9KAP SAINT-PETERSBURG BRIDGE
 
 """
 
@@ -34,7 +26,6 @@ def create_canvas(primary_router, routers={}):
     ONLINE_THRESHOLD = 600  # 10 минут
     cutoff = now - ONLINE_THRESHOLD
 
-    # ---- Available Nodes Block (оставляем без изменений) ----
     available = []
     for node_id, router in routers.items():
         logger.info(node_id)
@@ -72,8 +63,9 @@ def create_canvas(primary_router, routers={}):
     visible_nodes_list = []
     for node in online_nodes:
         name = f"{format_string(node.long_name, 20)} ({format_string(node.short_name, 4)})"
+        dst = str(list(router.delivery_destinations.values())[0].hash.hex())
         visible_nodes_list.append(
-            Paragraph(f"{node.node_id} : {name}", style=[CENTER])
+            Paragraph(f"{name} : {dst}", style=[CENTER])
         )
 
     if len(visible_nodes_list) == 0:

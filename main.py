@@ -290,6 +290,7 @@ class Bridge(LXMFApp):
                 long_name = user_info.get("longName", "UnknownLongName")
                 short_name = user_info.get("shortName", "UnknownShortName")
                 node_public_key = user_info.get("publicKey")
+                last_heard = user_info.get("lastHeard")
 
                 visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
 
@@ -305,14 +306,14 @@ class Bridge(LXMFApp):
                         node_id=user_info["id"],
                         long_name=long_name,
                         short_name=short_name,
-                        last_seen=int(time.time()),
+                        last_seen=last_heard,
                         public_key=node_public_key,
                         lxmf_identity=None
                     )
                 else:
                     visible_node.long_name = long_name
                     visible_node.short_name = short_name
-                    visible_node.last_seen = int(time.time())
+                    visible_node.last_seen = last_heard
                     visible_node.public_key = node_public_key
                     visible_node.save()
 
