@@ -86,6 +86,52 @@ class Bridge(LXMFApp):
         pub.subscribe(self.onReceive, 'meshtastic.receive')
         return interface
 
+    def create_router_visible(self, user: VisibleMeshtasticNode):
+        if user.node_id in self.routers:
+            del self.routers[str(user.node_id)]
+
+        identity = self.meshtastic_user__visible_to_identity(user)
+        router = LXMF.LXMRouter(identity, storagepath=self.storage_path)
+
+        def send_to_meshtastic_node(lxmessage: LXMF.LXMessage):
+            logger.info("Received message from LXMF")
+            to_node = str(user.node_id)
+
+            content = lxmessage.content_as_string()
+            message_source = lxmessage.source_hash
+
+            assert isinstance(message_source, bytes), "bad hash"
+            assert isinstance(content, str), "bad message"
+            from_display_name = self.get_name(message_source)
+            from_display_name = ''.join(
+                c for c in from_display_name.decode('ascii', errors='ignore') if c.isprintable())
+
+            msg = f"{from_display_name}: {content}"
+
+            if not self.LXMF_global_cooldown.try_perform_action():
+                logger.info("Blocked message due to cooldown")
+                source = list(router.delivery_destinations.values())[0]
+                router.announce(source.hash)
+                message = Message(lxmessage, router, source, self.get_name)
+                message.author.send(
+                    f"Sorry, a global cooldown has been activated to prevent spam from reaching the meshtastic network. Current cooldown timer is {int(self.LXMF_global_cooldown.cooldown)} seconds")
+                return
+
+            logger.info(msg)
+            self.mesh.interface.sendText(profanity.censor(msg), to_node, wantAck=True)
+
+        router.register_delivery_callback(send_to_meshtastic_node)
+        self.routers[str(user.node_id)] = router
+
+        source = router.register_delivery_identity(
+            identity,
+            display_name=user.long_name
+        )
+
+        router.announce(source.hash)  # type: ignore
+
+        logger.info(f"Ready to receive messages for {user.long_name}")
+
     def create_router(self, user: MeshtasticNode):
         if user.node_id in self.routers:
             del self.routers[str(user.node_id)]
@@ -130,14 +176,16 @@ class Bridge(LXMFApp):
 
         logger.info(f"Ready to receive messages for {user.long_name}")
 
+
+
     def build_routers(self):
         for user in MeshtasticNode.select():
             self.create_router(user)
 
         for user in VisibleMeshtasticNode.select():
-            print(f"user.lxmf_identity: {user.lxmf_identity}")
-            print(f"len: {len(str(user.lxmf_identity))}")
-            self.create_router(user)
+            logger.info(f"user.lxmf_identity: {user.lxmf_identity}")
+            logger.info(f"len: {len(str(user.lxmf_identity))}")
+            self.create_router_visible(user)
 
     def handleUser(self, message:Message):
         logger.info(f'Received LXMF message: "{message.content}"')
@@ -305,8 +353,8 @@ class Bridge(LXMFApp):
                 if visible_node and visible_node.public_key:
                     node_public_key = visible_node.public_key
                 elif not node_public_key:
-                    random_bytes = os.urandom(10)
-                    node_public_key = base64.b32encode(random_bytes).decode('utf-8')
+                    data = os.urandom(80)  # 80 байт случайных данных
+                    node_public_key = base64.b32encode(data).decode('utf-8')
                     logger.warning(f"No public key for node {long_name}. Generated placeholder: {node_public_key}")
 
                 if visible_node is None:
@@ -326,7 +374,7 @@ class Bridge(LXMFApp):
                     visible_node.save()
 
                 if visible_node.lxmf_identity is None:
-                    identity = self.meshtastic_node_name_to_identity(str(node_public_key))
+                    identity = RNS.Identity.from_bytes(base64.b32decode(node_public_key[:128]))
                     visible_node.lxmf_identity = identity
                     visible_node.save()
                     logger.info(f"Issued LXMF identity for visible node: {long_name}")
@@ -338,14 +386,18 @@ class Bridge(LXMFApp):
         except Exception as e:
             logger.error(f"Error during visible nodes scan: {e}")
 
-    def meshtastic_node_name_to_identity(self, public_key: str):
-        return RNS.Identity.from_bytes(
-            self.create_keys(
-                hashlib.sha256((public_key + str(SECRET)).encode("utf-8")).digest()
-            )
-        )
-
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
+        if user.node_id in self.routers:
+            return self.routers[str(user.node_id)].identity
+
+        if user.lxmf_identity is None:
+            logger.info("Building user identity from public key")
+            return self.meshtastic_public_to_identity(str(user.public_key))
+        else:
+            logger.info("Building user identity from custom identity")
+            return RNS.Identity.from_bytes(base64.b32decode(str(user.lxmf_identity)))
+
+    def meshtastic_user__visible_to_identity(self, user: VisibleMeshtasticNode):
         if user.node_id in self.routers:
             return self.routers[str(user.node_id)].identity
 
