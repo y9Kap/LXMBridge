@@ -135,6 +135,11 @@ class Bridge(LXMFApp):
         for user in MeshtasticNode.select():
             self.create_router(user)
 
+        for user in VisibleMeshtasticNode.select():
+            print(f"user.lxmf_identity: {user.lxmf_identity}")
+            print(f"len: {len(str(user.lxmf_identity))}")
+            self.create_router(user)
+
     def handleUser(self, message:Message):
         logger.info(f'Received LXMF message: "{message.content}"')
         user = LXMFUser.get_or_none(LXMFUser.identity_hash==base64.b64encode(message.author.identity_hash))
