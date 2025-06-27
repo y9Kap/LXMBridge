@@ -347,9 +347,8 @@ class Bridge(LXMFApp):
 
                 long_name = user_info.get("longName", "UnknownLongName")
                 short_name = user_info.get("shortName", "UnknownShortName")
-                prv_bytes = os.urandom(64)
-
-                node_public_key = base64.b32encode(prv_bytes).decode()
+                data = os.urandom(80)  # 80 байт случайных данных
+                node_public_key = base64.b32encode(data).decode('utf-8')
 
                 visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
 
