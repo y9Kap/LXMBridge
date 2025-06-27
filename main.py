@@ -40,6 +40,15 @@ class Bridge(LXMFApp):
     def __init__(self):
         LXMFApp.__init__(self, app_name=f"{BRIDGE_LOCATION} Meshtastic Bridge", storage_path="tmp")
         self.mesh = Injector(self.create_interface)
+        def periodic_scan():
+            while True:
+                try:
+                    self.scan_visible_nodes()
+                except Exception as e:
+                    logger.error(f"Visible nodes scan failed: {e}")
+                time.sleep(60)
+
+        threading.Thread(target=periodic_scan, daemon=True).start()
 
         self.routers:dict[str, LXMF.LXMRouter] = {} # meshtastic_node_id: LXMRouter
         self.build_routers()
@@ -61,15 +70,7 @@ class Bridge(LXMFApp):
 
         self.router.enable_propagation()
 
-        def periodic_scan():
-            while True:
-                try:
-                    self.scan_visible_nodes()
-                except Exception as e:
-                    logger.error(f"Visible nodes scan failed: {e}")
-                time.sleep(60)
 
-        threading.Thread(target=periodic_scan, daemon=True).start()
 
     def create_interface(self):
         remote_address = os.environ.get("MESHTASTIC_REMOTE", None)
@@ -90,7 +91,7 @@ class Bridge(LXMFApp):
         if user.node_id in self.routers:
             del self.routers[str(user.node_id)]
 
-        identity = self.meshtastic_user__visible_to_identity(user)
+        identity = self.meshtastic_user_visible_to_identity(user)
         router = LXMF.LXMRouter(identity, storagepath=self.storage_path)
 
         def send_to_meshtastic_node(lxmessage: LXMF.LXMessage):
@@ -183,8 +184,6 @@ class Bridge(LXMFApp):
             self.create_router(user)
 
         for user in VisibleMeshtasticNode.select():
-            logger.info(f"user.lxmf_identity: {user.lxmf_identity}")
-            logger.info(f"len: {len(str(user.lxmf_identity))}")
             self.create_router_visible(user)
 
     def handleUser(self, message:Message):
@@ -350,6 +349,7 @@ class Bridge(LXMFApp):
 
                 prv_bytes = os.urandom(64)
                 node_public_key = base64.b32encode(prv_bytes).decode()
+                logger.info(f'{node_public_key}')
 
                 visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
 
@@ -370,7 +370,7 @@ class Bridge(LXMFApp):
                     visible_node.save()
 
                 if visible_node.lxmf_identity is None:
-                    visible_node.lxmf_identity = RNS.Identity.from_bytes(base64.b32decode(node_public_key))
+                    visible_node.lxmf_identity = RNS.Identity.from_bytes(base64.b32decode(str(node_public_key)))
                     visible_node.save()
                     logger.info(f"Issued LXMF identity for visible node: {long_name}")
 
@@ -392,7 +392,7 @@ class Bridge(LXMFApp):
             logger.info("Building user identity from custom identity")
             return RNS.Identity.from_bytes(base64.b32decode(str(user.lxmf_identity)))
 
-    def meshtastic_user__visible_to_identity(self, user: VisibleMeshtasticNode):
+    def meshtastic_user_visible_to_identity(self, user: VisibleMeshtasticNode):
         if user.node_id in self.routers:
             return self.routers[str(user.node_id)].identity
 
