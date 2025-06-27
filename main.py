@@ -275,6 +275,7 @@ class Bridge(LXMFApp):
             assert isinstance(interface.nodes, dict), "interface.nodes not loaded"
 
             my_node_info = interface.getMyNodeInfo()
+            last_heard = my_node_info.get("lastHeard")
             my_node_id = my_node_info.get("user", {}).get("id", None)
 
             updated_count = 0
@@ -290,7 +291,7 @@ class Bridge(LXMFApp):
                 long_name = user_info.get("longName", "UnknownLongName")
                 short_name = user_info.get("shortName", "UnknownShortName")
                 node_public_key = user_info.get("publicKey")
-                last_heard = user_info.get("lastHeard")
+
 
                 visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
 
