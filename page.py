@@ -23,7 +23,7 @@ def format_string(text, target_length):
 
 def create_canvas(primary_router, routers={}):
     now = int(time.time())
-    ONLINE_THRESHOLD = 6000  # 10 минут
+    ONLINE_THRESHOLD = 60 * 60 * 7  # 10 минут
     cutoff = now - ONLINE_THRESHOLD
 
     available = []
