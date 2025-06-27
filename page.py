@@ -63,7 +63,11 @@ def create_canvas(primary_router, routers={}):
     visible_nodes_list = []
     for node in online_nodes:
         name = f"{format_string(node.long_name, 20)} ({format_string(node.short_name, 4)})"
-        dst = str(list(router.delivery_destinations.values())[0].hash.hex())
+        router = routers.get(node.node_id)
+        if router:
+            dst = str(list(router.delivery_destinations.values())[0].hash.hex())
+        else:
+            dst = "N/A"
         visible_nodes_list.append(
             Paragraph(f"{name} : {dst}", style=[CENTER])
         )
