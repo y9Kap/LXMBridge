@@ -1,4 +1,4 @@
-from LXMKit.src.LXMKit.mu import *
+from LXMKit.app import LXMFApp, Message, Author
 from db import MeshtasticNode, VisibleMeshtasticNode
 from log_f import logger
 from dotenv import load_dotenv
