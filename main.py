@@ -266,8 +266,8 @@ class Bridge(LXMFApp):
                 identity = RNS.Identity.from_bytes(base64.b32decode(key[:128]))
             except:
                 self.mesh.interface.sendText('Sorry, your provided identity could not be loaded.', from_id, wantAck=True)
-                return 
-            
+                return
+
             user.lxmf_identity = identity # type: ignore
             user.save()
 
@@ -278,7 +278,7 @@ class Bridge(LXMFApp):
             if user.lxmf_identity is None:
                 self.mesh.interface.sendText('No identity to deregister!', from_id, wantAck=True)
                 return
-            
+
         if message.startswith("/send"):
 
             try:
@@ -286,19 +286,19 @@ class Bridge(LXMFApp):
             except:
                 self.mesh.interface.sendText('Invalid command structure, please see /help.', from_id, wantAck=True)
                 return
-            
+
             if dst_node == self.source.hash.hex(): # type: ignore
                 self.mesh.interface.sendText('https://imgflip.com/i/7ogz7h', from_id, wantAck=True)
                 return
-            
+
             identity = self.meshtastic_user_to_identity(user)
             router = self.routers.get(str(user.node_id), None)
             if router is None:
                 self.mesh.interface.sendText('Your router does not exist?', from_id, wantAck=True)
                 return
-            
+
             #to_send = f"[MTS -> LXMF] {user.long_name}: {to_send}" # A little verbose
-            
+
             destination = RNS.Destination(
                 RNS.Identity.recall(bytes.fromhex(dst_node)),
                 RNS.Destination.OUT,
@@ -347,8 +347,9 @@ class Bridge(LXMFApp):
 
                 long_name = user_info.get("longName", "UnknownLongName")
                 short_name = user_info.get("shortName", "UnknownShortName")
-                data = os.urandom(80)  # 80 байт случайных данных
-                node_public_key = base64.b32encode(data).decode('utf-8')
+
+                prv_bytes = os.urandom(64)
+                node_public_key = base64.b32encode(prv_bytes).decode()
 
                 visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
 
