@@ -291,27 +291,30 @@ class Bridge(LXMFApp):
                 short_name = user_info.get("shortName", "UnknownShortName")
                 node_public_key = user_info.get("publicKey")
 
-                if not node_public_key:
+                visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
+
+                if visible_node and visible_node.public_key:
+                    node_public_key = visible_node.public_key
+                elif not node_public_key:
                     random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
                     node_public_key = f"{long_name}_{short_name}_{random_suffix}"
                     logger.warning(f"No public key for node {long_name}. Generated placeholder: {node_public_key}")
 
-                visible_node, created = VisibleMeshtasticNode.get_or_create(
-                    node_id=user_info["id"],
-                    defaults={
-                        "long_name": long_name,
-                        "short_name": short_name,
-                        "last_seen": int(time.time()),
-                        "public_key": node_public_key,
-                        "lxmf_identity": None
-                    }
-                )
-
-                visible_node.long_name = long_name
-                visible_node.short_name = short_name
-                visible_node.last_seen = int(time.time())
-                visible_node.public_key = node_public_key
-                visible_node.save()
+                if visible_node is None:
+                    visible_node = VisibleMeshtasticNode.create(
+                        node_id=user_info["id"],
+                        long_name=long_name,
+                        short_name=short_name,
+                        last_seen=int(time.time()),
+                        public_key=node_public_key,
+                        lxmf_identity=None
+                    )
+                else:
+                    visible_node.long_name = long_name
+                    visible_node.short_name = short_name
+                    visible_node.last_seen = int(time.time())
+                    visible_node.public_key = node_public_key
+                    visible_node.save()
 
                 if visible_node.lxmf_identity is None:
                     identity = self.meshtastic_node_name_to_identity(str(node_public_key))
