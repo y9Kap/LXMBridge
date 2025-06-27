@@ -285,6 +285,7 @@ class Bridge(LXMFApp):
 
                 last_heard = node_info.get("lastHeard")
                 user_info = node_info.get("user")
+                print(last_heard)
 
                 if last_heard is None:
                     continue
