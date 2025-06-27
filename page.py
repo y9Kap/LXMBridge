@@ -23,7 +23,7 @@ def format_string(text, target_length):
 
 def create_canvas(primary_router, routers={}):
     now = int(time.time())
-    ONLINE_THRESHOLD = 60 * 60 * 5
+    ONLINE_THRESHOLD = 60 * 60 * 10
     cutoff = now - ONLINE_THRESHOLD
 
     available = []
@@ -63,13 +63,24 @@ def create_canvas(primary_router, routers={}):
     visible_nodes_list = []
     for node in online_nodes:
         name = f"{format_string(node.long_name, 20)} ({format_string(node.short_name, 4)})"
+
+        seconds_ago = now - node.last_seen
+        if seconds_ago < 0:
+            seconds_ago = 0  # на случай кривого времени в БД
+
+        hours = seconds_ago // 3600
+        minutes = (seconds_ago % 3600) // 60
+        last_seen_str = f"{hours} h {minutes} m ago"
+
         router = routers.get(node.node_id)
         if router:
             dst = str(list(router.delivery_destinations.values())[0].hash.hex())
+            print(dst)
         else:
             dst = "N/A"
+
         visible_nodes_list.append(
-            Paragraph(f"{name} : {dst}", style=[CENTER])
+            Paragraph(f"{name} : {last_seen_str} : {dst}", style=[CENTER])
         )
 
     if len(visible_nodes_list) == 0:
