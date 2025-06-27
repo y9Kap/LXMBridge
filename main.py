@@ -1,4 +1,4 @@
-import meshtastic, time, base64, json, hashlib, base64, os
+import meshtastic, time, base64, json, hashlib, os
 import meshtastic.tcp_interface
 import meshtastic.serial_interface
 import traceback
@@ -10,7 +10,6 @@ import time
 import random
 import string
 import hashlib
-import logging
 
 from LXMKit.app import LXMFApp, Message, Author
 
@@ -306,8 +305,8 @@ class Bridge(LXMFApp):
                 if visible_node and visible_node.public_key:
                     node_public_key = visible_node.public_key
                 elif not node_public_key:
-                    random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
-                    node_public_key = f"{random_suffix}"
+                    random_bytes = os.urandom(10)
+                    node_public_key = base64.b32encode(random_bytes).decode('utf-8')
                     logger.warning(f"No public key for node {long_name}. Generated placeholder: {node_public_key}")
 
                 if visible_node is None:
