@@ -6,6 +6,11 @@ from pubsub import pub
 from db import database, MeshtasticNode, VisibleMeshtasticNode, MeshtasticMessage, LXMFUser
 from dotenv import load_dotenv
 import threading
+import time
+import random
+import string
+import hashlib
+import logging
 
 from LXMKit.app import LXMFApp, Message, Author
 
@@ -272,41 +277,61 @@ class Bridge(LXMFApp):
             my_node_info = interface.getMyNodeInfo()
             my_node_id = my_node_info.get("user", {}).get("id", None)
 
+            updated_count = 0
+
             for node_id, node_info in interface.nodes.items():
                 if node_id == my_node_id:
                     continue
 
-                user_info = node_info.get("user", None)
+                user_info = node_info.get("user")
                 if user_info is None:
                     continue
+
+                long_name = user_info.get("longName", "UnknownLongName")
+                short_name = user_info.get("shortName", "UnknownShortName")
+                node_public_key = user_info.get("publicKey")
+
+                if not node_public_key:
+                    random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+                    node_public_key = f"{long_name}_{short_name}_{random_suffix}"
+                    logger.warning(f"No public key for node {long_name}. Generated placeholder: {node_public_key}")
 
                 visible_node, created = VisibleMeshtasticNode.get_or_create(
                     node_id=user_info["id"],
                     defaults={
-                        "long_name": user_info["longName"],
-                        "short_name": user_info["shortName"],
+                        "long_name": long_name,
+                        "short_name": short_name,
                         "last_seen": int(time.time()),
-                        "public_key": user_info["publicKey"],
+                        "public_key": node_public_key,
                         "lxmf_identity": None
                     }
                 )
 
-                if not created:
-                    visible_node.long_name = user_info["longName"]
-                    visible_node.short_name = user_info["shortName"]
-                    visible_node.last_seen = int(time.time())
-                    visible_node.public_key = user_info["publicKey"]
-                    visible_node.save()
+                visible_node.long_name = long_name
+                visible_node.short_name = short_name
+                visible_node.last_seen = int(time.time())
+                visible_node.public_key = node_public_key
+                visible_node.save()
 
                 if visible_node.lxmf_identity is None:
-                    identity = self.meshtastic_public_to_identity(str(user_info["publicKey"]))
+                    identity = self.meshtastic_node_name_to_identity(str(node_public_key))
                     visible_node.lxmf_identity = identity
                     visible_node.save()
-                    logger.info(f"Issued LXMF identity for visible node: {user_info['longName']}")
+                    logger.info(f"Issued LXMF identity for visible node: {long_name}")
 
-            logger.info(f"Scanned and updated {len(interface.nodes)} visible nodes")
+                updated_count += 1
+
+            logger.info(f"Scanned and updated {updated_count} visible nodes")
+
         except Exception as e:
             logger.error(f"Error during visible nodes scan: {e}")
+
+    def meshtastic_node_name_to_identity(self, public_key: str):
+        return RNS.Identity.from_bytes(
+            self.create_keys(
+                hashlib.sha256((public_key + str(SECRET)).encode("utf-8")).digest()
+            )
+        )
 
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
         if user.node_id in self.routers:

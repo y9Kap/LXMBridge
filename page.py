@@ -117,7 +117,7 @@ def create_canvas(primary_router, routers={}):
                         subnodes=[
                             Br(),
                             Paragraph(
-                                "Below are all currently visible node IDs on the mesh, regardless of registration:",
+                                "Below are all currently visible node IDs on the mesh:",
                                 style=[CENTER]),
                             Br(),
                             Hr(),
