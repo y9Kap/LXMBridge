@@ -1,8 +1,9 @@
 from LXMKit.mu import *
-from db import MeshtasticNode
+from db import MeshtasticNode, VisibleMeshtasticNode
 from log_f import logger
 from dotenv import load_dotenv, find_dotenv
 import os
+import time
 
 load_dotenv("bridge.env") # add your path
 
@@ -29,12 +30,15 @@ def format_string(text, target_length):
     return text.ljust(target_length)
 
 def create_canvas(primary_router, routers={}):
+    now = int(time.time())
+    ONLINE_THRESHOLD = 600  # 10 минут
+    cutoff = now - ONLINE_THRESHOLD
+
+    # ---- Available Nodes Block (оставляем без изменений) ----
     available = []
     for node_id, router in routers.items():
         logger.info(node_id)
-
         node = MeshtasticNode.get_or_none(MeshtasticNode.node_id == node_id)
-
         if node is None:
             logger.info("Meshtastic node is none")
             continue
@@ -60,20 +64,22 @@ def create_canvas(primary_router, routers={}):
 
     our_dest = str(list(primary_router.delivery_destinations.values())[0].hash.hex())
 
-    # ---- Visible Nodes Block ----
+    # ---- Visible Nodes Block using VisibleMeshtasticNode ----
+    online_nodes = VisibleMeshtasticNode.select().where(
+        VisibleMeshtasticNode.last_seen >= cutoff
+    )
+
     visible_nodes_list = []
-    for node_id in routers.keys():
-        node = MeshtasticNode.get_or_none(MeshtasticNode.node_id == node_id)
-        if node:
-            name = f"{format_string(node.long_name, 20)} ({format_string(node.short_name, 4)})"
-        else:
-            name = "(unknown)"
+    for node in online_nodes:
+        name = f"{format_string(node.long_name, 20)} ({format_string(node.short_name, 4)})"
         visible_nodes_list.append(
-            Paragraph(f"{node_id} : {name}", style=[CENTER])
+            Paragraph(f"{node.node_id} : {name}", style=[CENTER])
         )
+
     if len(visible_nodes_list) == 0:
         visible_nodes_list = [Paragraph("No visible nodes detected...", style=[CENTER])]
 
+    # ---- Return Canvas ----
     return Micron(
         subnodes=[
             Div(
@@ -84,10 +90,15 @@ def create_canvas(primary_router, routers={}):
                         content="What is this?",
                         subnodes=[
                             Paragraph(
-                                f"This is an experimental 'bridge' between the Meshtastic network in {BRIDGE_LOCATION} and LXM. When running, LXM clients can send messages to the mesh and vise-versa. Message {our_dest} with '/help' to see more details."),
+                                f"This is an experimental 'bridge' between the Meshtastic network in {BRIDGE_LOCATION} "
+                                f"and LXM. When running, LXM clients can send messages to the mesh and vise-versa. "
+                                f"Message {our_dest} with '/help' to see more details."
+                            ),
                             Br(),
-                            Paragraph("Please note that development is still underway, so bugs are expected.",
-                                      style=[FOREGROUND_RED]),
+                            Paragraph(
+                                "Please note that development is still underway, so bugs are expected.",
+                                style=[FOREGROUND_RED]
+                            ),
                             Br(),
                         ]
                     ),
@@ -96,7 +107,8 @@ def create_canvas(primary_router, routers={}):
                         content="More info",
                         subnodes=[
                             Paragraph(
-                                "You can read the source code (and more) here: https://github.com/y9Kap/LXMBridge"),
+                                "You can read the source code (and more) here: https://github.com/y9Kap/LXMBridge"
+                            ),
                             Br(),
                         ]
                     ),
@@ -106,7 +118,9 @@ def create_canvas(primary_router, routers={}):
                         subnodes=[
                             Br(),
                             Paragraph(
-                                "Below is a list of registered meshtastic nodes and their associated LXM addresses. By sending a message to one of these addresses, the bridge will (hopefully) relay it to that node."),
+                                "Below is a list of registered meshtastic nodes and their associated LXM addresses. "
+                                "By sending a message to one of these addresses, the bridge will (hopefully) relay it to that node."
+                            ),
                             Br(),
                             Hr(),
                             Div(available),
@@ -121,7 +135,8 @@ def create_canvas(primary_router, routers={}):
                             Br(),
                             Paragraph(
                                 "Below are all currently visible node IDs on the mesh:",
-                                style=[CENTER]),
+                                style=[CENTER]
+                            ),
                             Br(),
                             Hr(),
                             Div(visible_nodes_list),
