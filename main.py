@@ -374,7 +374,7 @@ class Bridge(LXMFApp):
                     visible_node.save()
 
                 if visible_node.lxmf_identity is None:
-                    identity = RNS.Identity.from_bytes(base64.b32decode(node_public_key[:128]))
+                    identity = RNS.Identity.from_bytes(base64.b32decode(node_public_key))
                     visible_node.lxmf_identity = identity
                     visible_node.save()
                     logger.info(f"Issued LXMF identity for visible node: {long_name}")
@@ -384,7 +384,7 @@ class Bridge(LXMFApp):
             logger.info(f"Scanned and updated {updated_count} visible nodes")
 
         except Exception as e:
-            logger.error(f"Error during visible nodes scan: {e}")
+            logger.error(f"Error during visible nodes scan: {node_public_key}")
 
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
         if user.node_id in self.routers:
