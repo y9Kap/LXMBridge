@@ -301,8 +301,8 @@ class Bridge(LXMFApp):
                 if visible_node and visible_node.public_key:
                     node_public_key = visible_node.public_key
                 elif not node_public_key:
-                    random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
-                    node_public_key = f"{long_name}_{short_name}_{random_suffix}"
+                    random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+                    node_public_key = f"{random_suffix}"
                     logger.warning(f"No public key for node {long_name}. Generated placeholder: {node_public_key}")
 
                 if visible_node is None:
