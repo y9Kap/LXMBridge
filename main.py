@@ -300,7 +300,7 @@ class Bridge(LXMFApp):
 
                 if visible_node.lxmf_identity is None:
                     identity = self.meshtastic_public_to_identity(str(user_info["publicKey"]))
-                    visible_node.lxmf_identity = base64.b32encode(identity.export_bytes()).decode("utf-8")
+                    visible_node.lxmf_identity = identity
                     visible_node.save()
                     logger.info(f"Issued LXMF identity for visible node: {user_info['longName']}")
 
