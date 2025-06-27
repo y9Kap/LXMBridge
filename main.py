@@ -262,6 +262,7 @@ class Bridge(LXMFApp):
         if message.startswith("/register"):
             try:
                 key = message.split("/register")[1]
+                print(key)
                 identity = RNS.Identity.from_bytes(base64.b32decode(key[:128]))
             except:
                 self.mesh.interface.sendText('Sorry, your provided identity could not be loaded.', from_id, wantAck=True)
@@ -469,6 +470,7 @@ class Bridge(LXMFApp):
             mesh_node.short_name = raw_node["user"]["shortName"]
             mesh_node.last_seen = int(time.time()) # type: ignore
             mesh_node.public_key = raw_node["user"]["publicKey"]
+            print(raw_node["user"]["publicKey"])
             mesh_node.save()
 
         message_bytes = packet['decoded']['payload']
