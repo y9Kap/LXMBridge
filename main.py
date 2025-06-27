@@ -3,8 +3,9 @@ import meshtastic.tcp_interface
 import meshtastic.serial_interface
 import traceback
 from pubsub import pub
-from db import database, MeshtasticNode, MeshtasticMessage, LXMFUser
+from db import database, MeshtasticNode, VisibleMeshtasticNode, MeshtasticMessage, LXMFUser
 from dotenv import load_dotenv
+import threading
 
 from LXMKit.app import LXMFApp, Message, Author
 
@@ -20,7 +21,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat
 from better_profanity import profanity
 from fixed_interface import Injector
 
-load_dotenv("example.env") # add your path
+load_dotenv("bridge.env") # add your path
 
 profanity.load_censor_words()
 
@@ -55,6 +56,16 @@ class Bridge(LXMFApp):
         self.LXMF_global_cooldown = AntiSpam()
 
         self.router.enable_propagation()
+
+        def periodic_scan():
+            while True:
+                try:
+                    self.scan_visible_nodes()
+                except Exception as e:
+                    logger.error(f"Visible nodes scan failed: {e}")
+                time.sleep(60)
+
+        threading.Thread(target=periodic_scan, daemon=True).start()
 
     def create_interface(self):
         remote_address = os.environ.get("MESHTASTIC_REMOTE", None)
@@ -199,7 +210,7 @@ class Bridge(LXMFApp):
                 self.mesh.interface.sendText('Sorry, your provided identity could not be loaded.', from_id, wantAck=True)
                 return 
             
-            user.lxmf_identity = key # type: ignore
+            user.lxmf_identity = identity # type: ignore
             user.save()
 
             self.mesh.interface.sendText('Successfully loaded your identity!', from_id, wantAck=True)
@@ -253,6 +264,50 @@ class Bridge(LXMFApp):
 
             self.mesh.interface.sendText('Sent!', from_id, wantAck=True)
 
+    def scan_visible_nodes(self):
+        try:
+            interface = self.mesh.interface
+            assert isinstance(interface.nodes, dict), "interface.nodes not loaded"
+
+            my_node_info = interface.getMyNodeInfo()
+            my_node_id = my_node_info.get("user", {}).get("id", None)
+
+            for node_id, node_info in interface.nodes.items():
+                if node_id == my_node_id:
+                    continue
+
+                user_info = node_info.get("user", None)
+                if user_info is None:
+                    continue
+
+                visible_node, created = VisibleMeshtasticNode.get_or_create(
+                    node_id=user_info["id"],
+                    defaults={
+                        "long_name": user_info["longName"],
+                        "short_name": user_info["shortName"],
+                        "last_seen": int(time.time()),
+                        "public_key": user_info["publicKey"],
+                        "lxmf_identity": None
+                    }
+                )
+
+                if not created:
+                    visible_node.long_name = user_info["longName"]
+                    visible_node.short_name = user_info["shortName"]
+                    visible_node.last_seen = int(time.time())
+                    visible_node.public_key = user_info["publicKey"]
+                    visible_node.save()
+
+                if visible_node.lxmf_identity is None:
+                    identity = self.meshtastic_public_to_identity(str(user_info["publicKey"]))
+                    visible_node.lxmf_identity = base64.b32encode(identity.export_bytes()).decode("utf-8")
+                    visible_node.save()
+                    logger.info(f"Issued LXMF identity for visible node: {user_info['longName']}")
+
+            logger.info(f"Scanned and updated {len(interface.nodes)} visible nodes")
+        except Exception as e:
+            logger.error(f"Error during visible nodes scan: {e}")
+
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
         if user.node_id in self.routers:
             return self.routers[str(user.node_id)].identity
@@ -297,6 +352,9 @@ class Bridge(LXMFApp):
         
         # If we found ourself in the public channel
         out_node_info = interface.getMyNodeInfo()
+        out_nodes = interface.nodes
+        logger.info(out_nodes)
+
         if not isinstance(out_node_info, dict):
             logger.warning("Node info was none, broken pipe?")
             return
