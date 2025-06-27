@@ -39,7 +39,7 @@ def create_canvas(primary_router, routers={}):
             logger.info("Meshtastic node is none")
             continue
 
-        name = f"{format_string(node.long_name, 25)} ({format_string(node.short_name, 4)})"
+        name = f"{node.long_name} ({node.short_name})"
         dst = str(list(router.delivery_destinations.values())[0].hash.hex())
 
         available.append(
