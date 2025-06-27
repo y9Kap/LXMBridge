@@ -285,10 +285,9 @@ class Bridge(LXMFApp):
 
                 last_heard = node_info.get("lastHeard")
                 user_info = node_info.get("user")
-                print(last_heard)
 
                 if last_heard is None:
-                    continue
+                    last_heard = 0
 
                 if user_info is None:
                     continue
@@ -296,7 +295,6 @@ class Bridge(LXMFApp):
                 long_name = user_info.get("longName", "UnknownLongName")
                 short_name = user_info.get("shortName", "UnknownShortName")
                 node_public_key = user_info.get("publicKey")
-
 
                 visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
 
