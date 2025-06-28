@@ -364,12 +364,10 @@ class Bridge(LXMFApp):
                     visible_node.last_seen = last_heard
                     visible_node.public_key = node_public_key
 
-                # Если identity ещё нет — строим через meshtastic_public_to_identity:
                 if visible_node.lxmf_identity is None:
-                    identity = self.meshtastic_public_to_identity(str(node_public_key))
-                    # Сохраняем в БД в Base32:
-                    visible_node.lxmf_identity = base64.b32encode(identity.to_bytes()).decode("ascii")
-                visible_node.save()
+                    visible_node.lxmf_identity = self.meshtastic_public_to_identity(str(node_public_key))
+                    visible_node.save()
+                    logger.info(f"Issued LXMF identity for visible node: {long_name}")
 
                 updated_count += 1
 

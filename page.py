@@ -28,7 +28,6 @@ def create_canvas(primary_router, routers={}):
 
     available = []
     for node_id, router in routers.items():
-        logger.info(node_id)
         node = MeshtasticNode.get_or_none(MeshtasticNode.node_id == node_id)
         if node is None:
             logger.info("Meshtastic node is none")
