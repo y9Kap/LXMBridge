@@ -265,7 +265,7 @@ class Bridge(LXMFApp):
             except:
                 self.mesh.interface.sendText('Sorry, your provided identity could not be loaded.', from_id, wantAck=True)
                 return
-
+            logger.info(f'{identity}')
             user.lxmf_identity = identity # type: ignore
             user.save()
 
@@ -349,35 +349,34 @@ class Bridge(LXMFApp):
                 prv_bytes = os.urandom(64)
                 node_public_key = base64.b32encode(prv_bytes).decode()
 
-                visible_node = VisibleMeshtasticNode.get_or_none(node_id=user_info["id"])
-
-                if visible_node is None:
-                    visible_node = VisibleMeshtasticNode.create(
-                        node_id=user_info["id"],
-                        long_name=long_name,
-                        short_name=short_name,
-                        last_seen=last_heard,
-                        public_key=node_public_key,
-                        lxmf_identity=None
-                    )
-                else:
+                visible_node, created = VisibleMeshtasticNode.get_or_create(
+                    node_id=user_info["id"],
+                    defaults={
+                        "long_name": long_name,
+                        "short_name": short_name,
+                        "last_seen": last_heard,
+                        "public_key": node_public_key,
+                    }
+                )
+                if not created:
                     visible_node.long_name = long_name
                     visible_node.short_name = short_name
                     visible_node.last_seen = last_heard
                     visible_node.public_key = node_public_key
-                    visible_node.save()
 
+                # Если identity ещё нет — строим через meshtastic_public_to_identity:
                 if visible_node.lxmf_identity is None:
-                    visible_node.lxmf_identity = RNS.Identity.from_bytes(base64.b32decode(str(node_public_key)))
-                    visible_node.save()
-                    logger.info(f"Issued LXMF identity for visible node: {long_name}")
+                    identity = self.meshtastic_public_to_identity(str(node_public_key))
+                    # Сохраняем в БД в Base32:
+                    visible_node.lxmf_identity = base64.b32encode(identity.to_bytes()).decode("ascii")
+                visible_node.save()
 
                 updated_count += 1
 
             logger.info(f"Scanned and updated {updated_count} visible nodes")
 
         except Exception as e:
-            logger.error(f"Error during visible nodes scan: {node_public_key}")
+            logger.error(f"Error during visible nodes scan: {e}")
 
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
         if user.node_id in self.routers:
