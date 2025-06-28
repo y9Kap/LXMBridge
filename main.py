@@ -182,8 +182,8 @@ class Bridge(LXMFApp):
         for user in MeshtasticNode.select():
             self.create_router(user)
 
-        for user in VisibleMeshtasticNode.select():
-            self.create_router_visible(user)
+        for userVisible in VisibleMeshtasticNode.select():
+            self.create_router_visible(userVisible)
 
     def handleUser(self, message:Message):
         logger.info(f'Received LXMF message: "{message.content}"')
@@ -399,7 +399,9 @@ class Bridge(LXMFApp):
             return self.meshtastic_public_to_identity(str(user.public_key))
         else:
             logger.info("Building user identity from custom identity")
-            return RNS.Identity.from_bytes(base64.b32decode(str(user.lxmf_identity)))
+            prv_bytes = os.urandom(64)
+            node_public_key = base64.b32encode(prv_bytes).decode()
+            return RNS.Identity.from_bytes(base64.b32decode(str(node_public_key)))
 
     def create_keys(self, seed: bytes):
         assert len(seed) == 32, f"Seed must be 32 bytes, got {len(seed)}"
