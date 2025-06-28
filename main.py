@@ -364,11 +364,6 @@ class Bridge(LXMFApp):
                     visible_node.last_seen = last_heard
                     visible_node.public_key = node_public_key
 
-                if visible_node.lxmf_identity is None:
-                    visible_node.lxmf_identity = self.meshtastic_public_to_identity(str(node_public_key))
-                    visible_node.save()
-                    logger.info(f"Issued LXMF identity for visible node: {long_name}")
-
                 updated_count += 1
 
             logger.info(f"Scanned and updated {updated_count} visible nodes")
