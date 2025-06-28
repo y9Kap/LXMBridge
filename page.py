@@ -23,7 +23,7 @@ def format_string(text, target_length):
 
 def create_canvas(primary_router, routers={}):
     now = int(time.time())
-    ONLINE_THRESHOLD = 60 * 60 * 15
+    ONLINE_THRESHOLD = 60 * 60 * 15 # hours
     cutoff = now - ONLINE_THRESHOLD
 
     available = []
@@ -75,7 +75,6 @@ def create_canvas(primary_router, routers={}):
         router = routers.get(node.node_id)
         if router:
             dst = str(list(router.delivery_destinations.values())[0].hash.hex())
-            print(dst)
         else:
             dst = "N/A"
 
@@ -141,7 +140,7 @@ def create_canvas(primary_router, routers={}):
                         subnodes=[
                             Br(),
                             Paragraph(
-                                "Below are all currently visible node IDs on the mesh in 5 hour:",
+                                f"Below are all currently visible node IDs on the mesh in {ONLINE_THRESHOLD / 3600} hour:",
                                 style=[CENTER]
                             ),
                             Br(),

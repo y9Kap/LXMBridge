@@ -91,6 +91,7 @@ class Bridge(LXMFApp):
             del self.routers[str(user.node_id)]
 
         identity = self.meshtastic_user_visible_to_identity(user)
+        logger.info(f'created router for {user.long_name}')
         router = LXMF.LXMRouter(identity, storagepath=self.storage_path)
 
         def send_to_meshtastic_node(lxmessage: LXMF.LXMessage):
