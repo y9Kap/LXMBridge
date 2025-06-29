@@ -150,6 +150,21 @@ def create_canvas(primary_router, routers={}):
                         ]
                     ),
                     Br(),
+                    Header(
+                        "Login Form Example",
+                        [
+                            Div([
+                                Br(),
+                                Span([Paragraph("Username: "),
+                                      Input("name", "Anonymous", 16, style=[BACKGROUND_DARK_GREY])]),
+                                Span([Paragraph("Password: "),
+                                      Input("pass", "password123", 16, style=[BACKGROUND_DARK_GREY])]),
+                                Br(),
+                                Anchor("   Submit   ", href=None, style=[BACKGROUND_DARK_GREY]),
+                                Br(),
+                            ], style=[BACKGROUND_DARKER_GREY, CENTER])
+                        ]
+                    )
                 ]
             )
         ]
