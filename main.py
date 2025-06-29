@@ -372,6 +372,12 @@ class Bridge(LXMFApp):
                     visible_node.last_seen = last_heard
                     visible_node.public_key = node_public_key
 
+                if visible_node.lxmf_identity is None:
+                    identity = self.meshtastic_node_name_to_identity(str(node_public_key))
+                    visible_node.lxmf_identity = identity
+                    visible_node.save()
+                    logger.info(f"Issued LXMF identity for visible node: {long_name}")
+
                 updated_count += 1
 
             logger.info(f"Scanned and updated {updated_count} visible nodes")
@@ -449,13 +455,16 @@ class Bridge(LXMFApp):
             return
         
         mesh_node:MeshtasticNode = MeshtasticNode.get_or_none(MeshtasticNode.node_id==raw_node["user"]["id"])
+        long_name = raw_node["user"]["longName"]
+        short_name = raw_node["user"]["shortName"]
+        node_public_key = make_stable_public_key(long_name, short_name, SECRET)
         if mesh_node is None:
             mesh_node = MeshtasticNode.create(
                 node_id = raw_node["user"]["id"],
                 long_name = raw_node["user"]["longName"],
                 short_name = raw_node["user"]["shortName"],
                 last_seen = int(time.time()),
-                public_key = raw_node["user"]["publicKey"],
+                public_key = node_public_key,
                 lxmf_identity = None
             )
         else:
@@ -463,8 +472,7 @@ class Bridge(LXMFApp):
             mesh_node.long_name = raw_node["user"]["longName"]
             mesh_node.short_name = raw_node["user"]["shortName"]
             mesh_node.last_seen = int(time.time()) # type: ignore
-            mesh_node.public_key = raw_node["user"]["publicKey"]
-            logger.info(f'{raw_node["user"]["publicKey"]}')
+            mesh_node.public_key = node_public_key
             mesh_node.save()
 
         message_bytes = packet['decoded']['payload']
