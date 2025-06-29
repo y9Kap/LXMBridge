@@ -329,7 +329,6 @@ class Bridge(LXMFApp):
             self.mesh.interface.sendText('Sent!', from_id, wantAck=True)
 
     def scan_visible_nodes(self):
-
         try:
             interface = self.mesh.interface
             assert isinstance(interface.nodes, dict), "interface.nodes not loaded"
