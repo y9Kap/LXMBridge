@@ -1,4 +1,4 @@
-import meshtastic, time, base64, json, hashlib, os
+import meshtastic, time, base64, json, hashlib, os, hashlib, hmac
 import meshtastic.tcp_interface
 import meshtastic.serial_interface
 import traceback
@@ -34,6 +34,14 @@ SECRET = os.environ.get("BRIDGE_SECRET", None)
 BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 
 assert not SECRET is None, "Secret cannot be none, missing .env file?"
+
+
+def make_stable_public_key(long_name: str, short_name: str, secret: str) -> str:
+    data = f"{long_name}|{short_name}".encode("utf-8")
+
+    digest = hmac.new(secret.encode("utf-8"), data, hashlib.sha256).digest()
+
+    return base64.b32encode(digest).decode("ascii").rstrip("=")
 
 
 class Bridge(LXMFApp):
@@ -321,6 +329,7 @@ class Bridge(LXMFApp):
             self.mesh.interface.sendText('Sent!', from_id, wantAck=True)
 
     def scan_visible_nodes(self):
+
         try:
             interface = self.mesh.interface
             assert isinstance(interface.nodes, dict), "interface.nodes not loaded"
@@ -346,8 +355,7 @@ class Bridge(LXMFApp):
                 long_name = user_info.get("longName", "UnknownLongName")
                 short_name = user_info.get("shortName", "UnknownShortName")
 
-                prv_bytes = os.urandom(64)
-                node_public_key = base64.b32encode(prv_bytes).decode()
+                node_public_key = make_stable_public_key(long_name, short_name, SECRET)
 
                 visible_node, created = VisibleMeshtasticNode.get_or_create(
                     node_id=user_info["id"],
@@ -368,8 +376,10 @@ class Bridge(LXMFApp):
 
             logger.info(f"Scanned and updated {updated_count} visible nodes")
 
+
         except Exception as e:
             logger.error(f"Error during visible nodes scan: {e}")
+
 
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
         if user.node_id in self.routers:
