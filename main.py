@@ -372,7 +372,7 @@ class Bridge(LXMFApp):
                     visible_node.public_key = node_public_key
 
                 if visible_node.lxmf_identity is None:
-                    identity = self.meshtastic_node_name_to_identity(str(node_public_key))
+                    identity = RNS.Identity.from_bytes(base64.b32decode(str(node_public_key)))
                     visible_node.lxmf_identity = identity
                     visible_node.save()
                     logger.info(f"Issued LXMF identity for visible node: {long_name}")
