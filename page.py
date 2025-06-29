@@ -11,7 +11,7 @@ BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 
 logo = r"""
 
-                        Y9KAP SAINT-PETERSBURG BRIDGE
+                Y9KAP SAINT-PETERSBURG BRIDGE
 
 """
 
@@ -30,7 +30,6 @@ def create_canvas(primary_router, routers={}):
     for node_id, router in routers.items():
         node = MeshtasticNode.get_or_none(MeshtasticNode.node_id == node_id)
         if node is None:
-            logger.info("Meshtastic node is none")
             continue
 
         name = f"{node.long_name} ({node.short_name})"
