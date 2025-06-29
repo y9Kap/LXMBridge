@@ -5,7 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 import os
 import time
 
-load_dotenv("bridge.env") # add your path
+load_dotenv("bridge.env")  # add your path
 
 BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 
@@ -18,12 +18,28 @@ logo = r"""
 
 def format_string(text, target_length):
     if len(text) > target_length:
-        return text[:target_length-3] + "..."
+        return text[:target_length - 3] + "..."
     return text.ljust(target_length)
 
-def create_canvas(primary_router, routers={}):
+def extract_inputs_from_message(message_text):
+    """
+    Извлекает введенные значения из LXM render-строки после сабмита.
+    Возвращает dict вида {input_name: user_value}.
+    """
+    pattern = re.compile(r"`<\s*(!?)(?:(\d+)\|)?([^\`>\|]+)`([^>]*)>")
+    extracted = {}
+
+    for match in pattern.finditer(message_text):
+        name = match.group(3)
+        value = match.group(4)
+        extracted[name] = value
+
+    return extracted
+
+
+def create_canvas(primary_router, routers={}, user_inputs={}):
     now = int(time.time())
-    ONLINE_THRESHOLD = 60 * 60 * 3 # hours
+    ONLINE_THRESHOLD = 60 * 60 * 3  # hours
     cutoff = now - ONLINE_THRESHOLD
 
     available = []
@@ -82,6 +98,14 @@ def create_canvas(primary_router, routers={}):
 
     if len(visible_nodes_list) == 0:
         visible_nodes_list = [Paragraph("No visible nodes detected...", style=[CENTER])]
+
+    input_display = []
+    if user_inputs:
+        input_display.append(Paragraph("You submitted the following values:", style=[FOREGROUND_GREEN, CENTER]))
+        for k, v in user_inputs.items():
+            input_display.append(Paragraph(f"{k}: {v}", style=[CENTER]))
+    else:
+        input_display.append(Paragraph("No values submitted yet.", style=[CENTER]))
 
     # ---- Return Canvas ----
     return Micron(
@@ -162,9 +186,11 @@ def create_canvas(primary_router, routers={}):
                                 Br(),
                                 Anchor("   Submit   ", href=None, style=[BACKGROUND_DARK_GREY]),
                                 Br(),
-                            ], style=[BACKGROUND_DARKER_GREY, CENTER])
+                            ], style=[BACKGROUND_DARKER_GREY, CENTER]),
+                            Br(),
+                            Div(input_display, style=[BACKGROUND_LIGHT_GREY]),
                         ]
-                    )
+                    ),
                 ]
             )
         ]
