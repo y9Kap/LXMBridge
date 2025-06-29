@@ -11,7 +11,7 @@ BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 
 logo = r"""
 
-                Y9KAP SAINT-PETERSBURG BRIDGE
+            Y9KAP SAINT-PETERSBURG BRIDGE
 
 """
 

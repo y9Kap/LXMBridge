@@ -46,7 +46,7 @@ def make_stable_public_key(long_name: str, short_name: str, secret: str) -> str:
 
 class Bridge(LXMFApp):
     def __init__(self):
-        LXMFApp.__init__(self, app_name=f"{BRIDGE_LOCATION} Meshtastic Bridge", storage_path="tmp")
+        LXMFApp.__init__(self, app_name=f"{BRIDGE_LOCATION} Meshtastic Bridge", storage_path="brg")
         self.mesh = Injector(self.create_interface)
 
         self.routers:dict[str, LXMF.LXMRouter] = {} # meshtastic_node_id: LXMRouter
