@@ -2,6 +2,7 @@ from LXMKit.mu import *
 from db import MeshtasticNode, VisibleMeshtasticNode
 from log_f import logger
 from dotenv import load_dotenv, find_dotenv
+import re
 import os
 import time
 
@@ -184,7 +185,7 @@ def create_canvas(primary_router, routers={}, user_inputs={}):
                                 Span([Paragraph("Password: "),
                                       Input("pass", "password123", 16, style=[BACKGROUND_DARK_GREY])]),
                                 Br(),
-                                Anchor("   Submit   ", href=None, style=[BACKGROUND_DARK_GREY]),
+                                Anchor("   Submit   ", href="page/index.mu", style=[BACKGROUND_DARK_GREY]),
                                 Br(),
                             ], style=[BACKGROUND_DARKER_GREY, CENTER]),
                             Br(),
