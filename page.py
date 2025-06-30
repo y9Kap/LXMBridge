@@ -100,8 +100,10 @@ def create_canvas(primary_router, routers={}, user_inputs={}):
     if len(visible_nodes_list) == 0:
         visible_nodes_list = [Paragraph("No visible nodes detected...", style=[CENTER])]
 
-    name_value = os.environ.get("field_name", "Anonymous")
+    name_value = os.environ.get("field_name", None)
     pass_value = os.environ.get("field_pass", "password123")
+
+    logger.info(name_value)
 
     # Формируем блок отображения введенных значений
     input_display = []
