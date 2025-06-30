@@ -38,7 +38,7 @@ def extract_inputs_from_message(message_text):
     return extracted
 
 
-def create_canvas(primary_router, routers={}, user_inputs={}):
+def create_canvas(primary_router, routers={}):
     now = int(time.time())
     ONLINE_THRESHOLD = 60 * 60 * 3  # hours
     cutoff = now - ONLINE_THRESHOLD

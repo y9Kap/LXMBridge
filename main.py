@@ -247,6 +247,8 @@ class Bridge(LXMFApp):
             return
 
     def handleIndex(self, path:str, link:RNS.Link):
+        logger.info(f"{path}")
+        logger.info(f"{link}")
         try:
             return create_canvas(self.router, self.routers).render().encode("utf-8")
         except Exception as e:
