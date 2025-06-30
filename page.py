@@ -186,7 +186,7 @@ def create_canvas(primary_router, routers={}, user_inputs={}):
                                 Span([Paragraph("Password: "),
                                       Input("pass", "password123", 16, style=[BACKGROUND_DARK_GREY])]),
                                 Br(),
-                                Anchor("   Submit   ", href=f":/page/index.mu", style=[BACKGROUND_DARK_GREY]),
+                                Anchor("   Submit   ", href=":/page/index.mu", style=[BACKGROUND_DARK_GREY]),
                                 Br(),
                             ], style=[BACKGROUND_DARKER_GREY, CENTER]),
                             Br(),
