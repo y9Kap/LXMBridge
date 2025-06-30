@@ -100,13 +100,14 @@ def create_canvas(primary_router, routers={}, user_inputs={}):
     if len(visible_nodes_list) == 0:
         visible_nodes_list = [Paragraph("No visible nodes detected...", style=[CENTER])]
 
+    name_value = os.environ.get("field_name", "Anonymous")
+    pass_value = os.environ.get("field_pass", "password123")
+
+    # Формируем блок отображения введенных значений
     input_display = []
-    if user_inputs:
-        input_display.append(Paragraph("You submitted the following values:", style=[FOREGROUND_GREEN, CENTER]))
-        for k, v in user_inputs.items():
-            input_display.append(Paragraph(f"{k}: {v}", style=[CENTER]))
-    else:
-        input_display.append(Paragraph("No values submitted yet.", style=[CENTER]))
+    input_display.append(Paragraph("You submitted the following values:", style=[FOREGROUND_GREEN, CENTER]))
+    input_display.append(Paragraph(f"Username: {name_value}", style=[CENTER]))
+    input_display.append(Paragraph(f"Password: {pass_value}", style=[CENTER]))
 
     # ---- Return Canvas ----
     return Micron(
@@ -185,7 +186,7 @@ def create_canvas(primary_router, routers={}, user_inputs={}):
                                 Span([Paragraph("Password: "),
                                       Input("pass", "password123", 16, style=[BACKGROUND_DARK_GREY])]),
                                 Br(),
-                                Anchor("   Submit   ", href="page/index.mu", style=[BACKGROUND_DARK_GREY]),
+                                Anchor("   Submit   ", href=f":/page/info.mu", style=[BACKGROUND_DARK_GREY]),
                                 Br(),
                             ], style=[BACKGROUND_DARKER_GREY, CENTER]),
                             Br(),
