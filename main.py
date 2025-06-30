@@ -247,10 +247,10 @@ class Bridge(LXMFApp):
             return
 
     def handleIndex(self, path:str, link:RNS.Link):
-        logger.info(f"{path}")
-        logger.info(f"{link}")
         try:
-            return create_canvas(self.router, self.routers).render().encode("utf-8")
+            render = create_canvas(self.router, self.routers).render().encode("utf-8")
+            logger.info(f"{render}")
+            return render
         except Exception as e:
             print(traceback.format_exc())
             logger.warning(f"Could not serve page: {e}")
