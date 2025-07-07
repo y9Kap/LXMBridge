@@ -36,8 +36,8 @@ BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 assert not SECRET is None, "Secret cannot be none, missing .env file?"
 
 
-def make_stable_public_key(long_name: str, short_name: str, secret: str) -> str:
-    data = f"{long_name}|{short_name}".encode("utf-8")
+def make_stable_public_key(long_name: str, short_name: str, mesh_id: str, secret: str) -> str:
+    data = f"{long_name}|{short_name}|{mesh_id}".encode("utf-8")
 
     digest = hmac.new(secret.encode("utf-8"), data, hashlib.sha256).digest()
 
@@ -337,6 +337,7 @@ class Bridge(LXMFApp):
             my_node_id = my_node_info.get("user", {}).get("id", None)
 
             updated_count = 0
+            interface.showNodes()
 
             for node_id, node_info in interface.nodes.items():
                 if node_id == my_node_id:
@@ -353,8 +354,9 @@ class Bridge(LXMFApp):
 
                 long_name = user_info.get("longName", "UnknownLongName")
                 short_name = user_info.get("shortName", "UnknownShortName")
+                mesh_id = user_info.get("id", "UnknownId")
 
-                node_public_key = make_stable_public_key(long_name, short_name, SECRET)
+                node_public_key = make_stable_public_key(long_name, short_name, mesh_id, SECRET)
 
                 visible_node, created = VisibleMeshtasticNode.get_or_create(
                     node_id=user_info["id"],
@@ -450,7 +452,9 @@ class Bridge(LXMFApp):
         mesh_node:MeshtasticNode = MeshtasticNode.get_or_none(MeshtasticNode.node_id==raw_node["user"]["id"])
         long_name = raw_node["user"]["longName"]
         short_name = raw_node["user"]["shortName"]
-        node_public_key = make_stable_public_key(long_name, short_name, SECRET)
+        mesh_id = raw_node["user"]["id"]
+
+        node_public_key = make_stable_public_key(long_name, short_name, mesh_id, SECRET)
         if mesh_node is None:
             mesh_node = MeshtasticNode.create(
                 node_id = raw_node["user"]["id"],
