@@ -12,7 +12,7 @@ BRIDGE_LOCATION = os.environ.get("BRIDGE_LOCATION", "Unknown")
 
 logo = r"""
 
-            Y9KAP SAINT-PETERSBURG BRIDGE
+        Y9KAP SAINT-PETERSBURG BRIDGE
 
 """
 
@@ -115,6 +115,13 @@ def create_canvas(primary_router, routers={}):
                                 "You can read the source code (and more) here: https://github.com/y9Kap/LXMBridge"
                             ),
                             Br(),
+                            Paragraph(
+                                "Write me: "
+                                "\nval tg = Telegram(\"y9Kap\")"
+                                "\nval lxmf = Lxmf(\"4c4546549df7bcbf0d85eb92cb82019d\")"
+                                "\ntg.share()"
+                                "\nlxmf.share()"
+                            ),
                         ]
                     ),
                     Br(),
