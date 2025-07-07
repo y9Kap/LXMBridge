@@ -337,7 +337,6 @@ class Bridge(LXMFApp):
             my_node_id = my_node_info.get("user", {}).get("id", None)
 
             updated_count = 0
-            interface.showNodes()
 
             for node_id, node_info in interface.nodes.items():
                 if node_id == my_node_id:
