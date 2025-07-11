@@ -99,9 +99,6 @@ class Bridge(LXMFApp):
         if user.node_id in self.routers:
             del self.routers[str(user.node_id)]
 
-        if MeshtasticNode.select().where(MeshtasticNode.node_id == str(user.node_id)).exists():
-            return
-
         identity = self.meshtastic_user_visible_to_identity(user)
         router = LXMF.LXMRouter(identity, storagepath=self.storage_path)
 
