@@ -240,7 +240,7 @@ class Bridge(LXMFApp):
                 message.author.send(
                     "Sorry, to prevent spam, we need your RNS identity first.\nYou can try announcing it, but it may take a while for it to propagate through the network...")
             else:
-                msg = "ping"
+                msg = f"ping from{message.author.display_name}"
                 self.mesh.interface.sendText(profanity.censor(msg), wantAck=True)
                 message.author.send("Ping message has been sent!")
 
