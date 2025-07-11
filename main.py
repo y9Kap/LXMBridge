@@ -79,16 +79,6 @@ class Bridge(LXMFApp):
 
         threading.Thread(target=periodic_scan, daemon=True).start()
 
-        def periodic_reset():
-            while True:
-                try:
-                    self.reset_node_db()
-                except Exception as e:
-                    logger.error(f"Reset nodes failed: {e}")
-                time.sleep(3600 * 24 * 2)
-
-        threading.Thread(target=periodic_reset, daemon=True).start()
-
     def create_interface(self):
         remote_address = os.environ.get("MESHTASTIC_REMOTE", None)
         serial_port = os.environ.get("MESHTASTIC_SERIAL", None)
@@ -221,7 +211,7 @@ class Bridge(LXMFApp):
             message.author.send("Please type '/help' to view available commands.")
 
         if message.content == "/help":
-            message.author.send("Commands:\n/help, shows available commands\n/listen, start receiving messages\n/stop, stop receiving messages\n/send, send a message to the public channel\n/whoami, shows user configuration")
+            message.author.send("Commands:\n/help, shows available commands\n/listen, start receiving messages\n/stop, stop receiving messages\n/send, send a message to the public channel\n/whoami, shows user configuration\n/ping, send message with text\"ping\"")
             return
         
         if message.content == "/listen":
@@ -405,13 +395,6 @@ class Bridge(LXMFApp):
 
         except Exception as e:
             logger.error(f"Error during visible nodes scan: {e}")
-
-    def reset_node_db(self):
-        interface = self.mesh.interface
-        assert isinstance(interface.nodes, dict), "interface.nodes not loaded"
-        node = interface.localNode
-        node.resetNodeDb()
-
 
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
         if user.node_id in self.routers:
