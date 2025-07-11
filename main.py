@@ -79,6 +79,16 @@ class Bridge(LXMFApp):
 
         threading.Thread(target=periodic_scan, daemon=True).start()
 
+        def periodic_reset():
+            while True:
+                try:
+                    self.reset_node_db()
+                except Exception as e:
+                    logger.error(f"Reset nodes failed: {e}")
+                time.sleep(3600 * 24 * 2)
+
+        threading.Thread(target=periodic_reset, daemon=True).start()
+
     def create_interface(self):
         remote_address = os.environ.get("MESHTASTIC_REMOTE", None)
         serial_port = os.environ.get("MESHTASTIC_SERIAL", None)
@@ -379,6 +389,12 @@ class Bridge(LXMFApp):
 
         except Exception as e:
             logger.error(f"Error during visible nodes scan: {e}")
+
+    def reset_node_db(self):
+        interface = self.mesh.interface
+        assert isinstance(interface.nodes, dict), "interface.nodes not loaded"
+        node = interface.localNode
+        node.resetNodeDb()
 
 
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
