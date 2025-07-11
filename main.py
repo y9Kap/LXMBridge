@@ -390,12 +390,6 @@ class Bridge(LXMFApp):
         except Exception as e:
             logger.error(f"Error during visible nodes scan: {e}")
 
-    def reset_node_db(self):
-        interface = self.mesh.interface
-        assert isinstance(interface.nodes, dict), "interface.nodes not loaded"
-        node = interface.localNode
-        node.resetNodeDb()
-
 
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
         if user.node_id in self.routers:
