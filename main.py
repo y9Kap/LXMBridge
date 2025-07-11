@@ -95,6 +95,10 @@ class Bridge(LXMFApp):
         return interface
 
     def create_router_visible(self, user: VisibleMeshtasticNode):
+
+        if MeshtasticNode.select().where(MeshtasticNode.node_id == str(user.node_id)).exists():
+            return
+
         if user.node_id in self.routers:
             del self.routers[str(user.node_id)]
 
