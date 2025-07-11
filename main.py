@@ -239,6 +239,22 @@ class Bridge(LXMFApp):
         if message.content == "/whoami":
             message.author.send(f"You are '{user.name}'.\nYou are {'not ' if not user.is_subscribed else ''}subscribed")
             return
+
+        if message.content == "/ping":
+            if not self.LXMF_global_cooldown.try_perform_action():
+                message.author.send(
+                    f"Sorry, a global cooldown has been activated to prevent spam from reaching the meshtastic network. Current cooldown timer is {int(self.LXMF_global_cooldown.cooldown)} seconds")
+                return
+
+            if user.name == "UNK":
+                message.author.send(
+                    "Sorry, to prevent spam, we need your RNS identity first.\nYou can try announcing it, but it may take a while for it to propagate through the network...")
+            else:
+                msg = "ping"
+                self.mesh.interface.sendText(profanity.censor(msg), wantAck=True)
+                message.author.send("Ping message has been sent!")
+
+            return
         
         if message.content.startswith("/send "):
 
@@ -389,6 +405,12 @@ class Bridge(LXMFApp):
 
         except Exception as e:
             logger.error(f"Error during visible nodes scan: {e}")
+
+    def reset_node_db(self):
+        interface = self.mesh.interface
+        assert isinstance(interface.nodes, dict), "interface.nodes not loaded"
+        node = interface.localNode
+        node.resetNodeDb()
 
 
     def meshtastic_user_to_identity(self, user: MeshtasticNode):
